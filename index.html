@@ -99,7 +99,7 @@
       mcdonalds: [
         { name: "Біг Мак®", calories: 526, price: 141, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3413_BigMac.png" },
         { name: "Біг Тейсті Сингл", calories: 620, price: 192, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_3442_Sdwch_Big_Tasty_Single.jpg" },
-        { name: "Тейсті Джуніор", calories: 400, price: 104, img: "https://i.imgur.com/2eJ0Vxn.png" },
+        { name: "Тейсті Джуніор", calories: 400, price: 104, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_3441_Sdwch_Big_Tasty_Junior.jpg" },
         { name: "Дабл Біг Тейсті", calories: 880, price: 271, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_3443_Sdwch_Big_Tasty_Double.jpg" },
         { name: "Дабл Роял Чізбургер", calories: 760, price: 240, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3415_DoubleRoyalCheeseburger_2.png" },
         { name: "Роял Чізбургер", calories: 530, price: 161, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3414_RoyalCheeseburger_2.png" },
@@ -151,7 +151,7 @@
             <img src="${dish.img}" alt="${dish.name}">
             <div class="dish-details">
               <strong>${dish.name}</strong><br>
-              ${dish.calories} ккал — $${dish.price.toFixed(2)}
+              ${dish.calories} ккал — ₴${dish.price.toFixed(2)}
             </div>
           </div>
           <button class="btn" style="background:#e74c3c;" onclick="toggleDish('${dish.name}')">
