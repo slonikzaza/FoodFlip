@@ -85,7 +85,7 @@
 
     <div class="filters">
       <label>Макс. калории: <input type="number" id="calorieFilter" value="1000"></label>
-      <label>Макс. цена ($): <input type="number" id="priceFilter" value="20"></label>
+      <label>Макс. цена (₴): <input type="number" id="priceFilter" value="20"></label>
       <button class="btn" onclick="filterAndPick()">🎲 Рандом</button>
     </div>
 
@@ -97,19 +97,21 @@
 
     const menus = {
       mcdonalds: [
-        { name: "Біг Мак®", calories: 526, price: 2.63, img: "https://i.imgur.com/F0dufZT.png" },
-        { name: "Біг Тейсті", calories: 790, price: 4.33, img: "https://i.imgur.com/2eJ0Vxn.png" },
-        { name: "Дабл Роял Чізбургер", calories: 760, price: 4.48, img: "https://i.imgur.com/BINzoD1.png" },
-        { name: "Роял Чізбургер", calories: 530, price: 2.98, img: "https://i.imgur.com/dFAZep9.png" },
-        { name: "МакЧікен", calories: 448, price: 2.28, img: "https://i.imgur.com/kDRn2d5.png" },
-        { name: "Філе-о-Фіш", calories: 379, price: 2.23, img: "https://i.imgur.com/lwaL2Be.png" },
-        { name: "Дабл Чізбургер", calories: 475, price: 2.23, img: "https://i.imgur.com/VQUDS6i.png" },
-        { name: "Чізбургер", calories: 298, price: 1.48, img: "https://i.imgur.com/fg1SrLf.png" },
-        { name: "Гамбургер", calories: 249, price: 1.25, img: "https://i.imgur.com/XYkKbsz.png" },
-        { name: "Чікен МакНагетс 6шт", calories: 265, price: 1.95, img: "https://i.imgur.com/QpqDR3Y.png" },
-        { name: "Чікен МакНагетс 9шт", calories: 398, price: 2.75, img: "https://i.imgur.com/ucZsb1Y.png" },
-        { name: "Чікен Джуніор", calories: 330, price: 1.75, img: "https://i.imgur.com/SVEtTJi.png" },
-        { name: "Курячі стріпси 3шт", calories: 200, price: 2.33, img: "https://i.imgur.com/9qz5X8A.png" }
+        { name: "Біг Мак®", calories: 526, price: 141, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3413_BigMac.png" },
+        { name: "Біг Тейсті Сингл", calories: 620, price: 192, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_3442_Sdwch_Big_Tasty_Single.jpg" },
+        { name: "Тейсті Джуніор", calories: 400, price: 104, img: "https://i.imgur.com/2eJ0Vxn.png" },
+        { name: "Дабл Біг Тейсті", calories: 880, price: 271, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_3443_Sdwch_Big_Tasty_Double.jpg" },
+        { name: "Дабл Роял Чізбургер", calories: 760, price: 240, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3415_DoubleRoyalCheeseburger_2.png" },
+        { name: "Роял Чізбургер", calories: 530, price: 161, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3414_RoyalCheeseburger_2.png" },
+        { name: "МакЧікен", calories: 448, price: 119, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3416_McChicken.png" },
+        { name: "Філе-о-Фіш", calories: 379, price: 117, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3412_File-o-Fish_2025.png" },
+        { name: "Дабл Чізбургер", calories: 475, price: 121, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3411_DoubleCheeseburger.png" },
+        { name: "Чізбургер", calories: 298, price: 73, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3409_Cheeseburger.png" },
+        { name: "Гамбургер", calories: 249, price: 63, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3408_Hamburger.png" },
+        { name: "Чікен МакНагетс 6шт", calories: 265, price: 101, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_2130_Nuggets_6.png" },
+        { name: "Чікен МакНагетс 9шт", calories: 398, price: 145, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_2131_Nuggets_9.png" },
+        { name: "Чікен Джуніор", calories: 330, price: 73, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3426_CHICKEN_JUNIOR_BEST.png" },
+        { name: "Курячі стріпси 3шт", calories: 200, price: 97, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3500_3strips.png" }
       ],
       kfc: [
         { name: "Zinger Burger", calories: 610, price: 6, img: "https://i.imgur.com/DrlUPPs.png" },
