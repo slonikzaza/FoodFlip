@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Fast Food Randomizer</title>
+  <title>FoodFlip</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
@@ -76,7 +76,7 @@
   </style>
 </head>
 <body>
-  <h2>Выбери ресторан:</h2>
+  <h2>Вибери ресторан:</h2>
   <button class="btn" onclick="selectRestaurant('mcdonalds')">McDonald's</button>
   <button class="btn" onclick="selectRestaurant('kfc')">KFC</button>
 
@@ -84,8 +84,8 @@
     <h3>Меню: <span id="restaurantName"></span></h3>
 
     <div class="filters">
-      <label>Макс. калории: <input type="number" id="calorieFilter" value="1000"></label>
-      <label>Макс. цена (₴): <input type="number" id="priceFilter" value="20"></label>
+      <label>Макс. калорії:<input type="number" id="calorieFilter" value="1000"></label>
+      <label>Макс. ціна (₴): <input type="number" id="priceFilter" value="20"></label>
       <button class="btn" onclick="filterAndPick()">🎲 Рандом</button>
     </div>
 
@@ -155,7 +155,7 @@
             </div>
           </div>
           <button class="btn" style="background:#e74c3c;" onclick="toggleDish('${dish.name}')">
-            ${excludedDishes.has(dish.name) ? "Включить" : "Исключить"}
+            ${excludedDishes.has(dish.name) ? "Включити" : "Виключити"}
           </button>
         `;
         container.appendChild(div);
@@ -173,12 +173,12 @@
       );
 
       if (filtered.length === 0) {
-        alert("Нет подходящих блюд 😕");
+        alert("Немає відповідних страв 😕");
         return;
       }
 
       const pick = filtered[Math.floor(Math.random() * filtered.length)];
-      Telegram.WebApp.showAlert(`🎉 Твое блюдо: ${pick.name}`);
+      Telegram.WebApp.showAlert(`🎉 Твоя страва: ${pick.name}`);
     }
   </script>
 </body>
