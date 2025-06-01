@@ -1,17 +1,191 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Mini Web App</title>
+  <title>Выбор блюда из фастфуда</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      line-height: 1.4;
+    }
+    h1, h2 {
+      margin-bottom: 10px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    #menuContainer {
+      margin-top: 20px;
+    }
+    #filters {
+      margin-bottom: 15px;
+    }
+    #filters input {
+      width: 100px;
+      margin-left: 5px;
+    }
+    ul#dishList {
+      list-style: none;
+      padding-left: 0;
+      margin-bottom: 15px;
+    }
+    ul#dishList li {
+      margin: 6px 0;
+      padding: 6px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+    }
+    ul#dishList li label {
+      margin-left: 8px;
+      cursor: pointer;
+    }
+    #randomBtn {
+      padding: 8px 12px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 16px;
+    }
+  </style>
+  <!-- Если планируете использовать Web App внутри Telegram, оставьте строку ниже -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-  <h2>Привет из минивеба!</h2>
-  <button onclick="Telegram.WebApp.sendData('Привет, бот!')">Отправить данные в бот</button>
+
+  <h1>Выбор ресторана</h1>
+
+  <label for="restaurantSelect">Ресторан:</label>
+  <select id="restaurantSelect">
+    <option value="">— Выберите ресторан —</option>
+    <option value="mcdonalds">McDonald's</option>
+    <option value="kfc">KFC</option>
+  </select>
+
+  <div id="menuContainer" style="display: none;">
+    <h2>Меню</h2>
+
+    <div id="filters">
+      <label>
+        Максимальные калории:
+        <input type="number" id="maxCalories" placeholder="Например, 500">
+      </label>
+      <label>
+        Максимальная цена (₽):
+        <input type="number" id="maxPrice" placeholder="Например, 200">
+      </label>
+    </div>
+
+    <ul id="dishList"></ul>
+
+    <button id="randomBtn">Случайный выбор</button>
+
+    <div id="result"></div>
+  </div>
 
   <script>
-    Telegram.WebApp.ready();
-  </script>
-</body>
-</html>
+    // Данные меню для двух ресторанов
+    const menus = {
+      mcdonalds: [
+        { name: "Биг Мак", calories: 550, price: 250 },
+        { name: "Чизбургер", calories: 300, price: 120 },
+        { name: "Картофель фри", calories: 340, price: 100 },
+        { name: "Купончик", calories: 450, price: 180 },
+        { name: "Куриный МакНаггетс (6 шт.)", calories: 270, price: 200 }
+      ],
+      kfc: [
+        { name: "Острые крылышки (4 шт.)", calories: 400, price: 220 },
+        { name: "Баскет", calories: 700, price: 350 },
+        { name: "Картофель по-деревенски", calories: 290, price: 150 },
+        { name: "Сандерс бургер", calories: 500, price: 260 },
+        { name: "Острый ролл", calories: 320, price: 140 }
+      ]
+    };
+
+    // Ссылки на элементы DOM
+    const restaurantSelect = document.getElementById("restaurantSelect");
+    const menuContainer   = document.getElementById("menuContainer");
+    const dishList        = document.getElementById("dishList");
+    const maxCaloriesInput= document.getElementById("maxCalories");
+    const maxPriceInput   = document.getElementById("maxPrice");
+    const randomBtn       = document.getElementById("randomBtn");
+    const resultDiv       = document.getElementById("result");
+
+    // Когда пользователь выбирает ресторан
+    restaurantSelect.addEventListener("change", () => {
+      const selected = restaurantSelect.value;
+      if (selected) {
+        renderMenu(selected);
+        menuContainer.style.display = "block";
+      } else {
+        menuContainer.style.display = "none";
+        dishList.innerHTML = "";
+      }
+      resultDiv.textContent = ""; // Сбрасываем предыдущий результат
+    });
+
+    // При изменении фильтров пересчитываем, какие блюда видим
+    maxCaloriesInput.addEventListener("input", updateDishVisibility);
+    maxPriceInput.addEventListener("input", updateDishVisibility);
+
+    // Обработчик нажатия кнопки "Случайный выбор"
+    randomBtn.addEventListener("click", () => {
+      const available = [];
+      const checkboxes = document.querySelectorAll(".excludeCheckbox");
+
+      checkboxes.forEach(cb => {
+        const li = cb.closest("li");
+        // Берём только те блюда, которые НЕ отмечены на исключение и видимы по фильтрам
+        if (!cb.checked && li.style.display !== "none") {
+          available.push(cb.getAttribute("data-name"));
+        }
+      });
+
+      if (available.length === 0) {
+        resultDiv.textContent = "Нет доступных блюд (либо всё отфильтровано, либо все исключены).";
+      } else {
+        const rand = available[Math.floor(Math.random() * available.length)];
+        resultDiv.textContent = "Рекомендуем: " + rand;
+      }
+    });
+
+    // Функция рендерит список блюд для выбранного ресторана
+    function renderMenu(restaurant) {
+      dishList.innerHTML = ""; // очистить старые элементы
+      const menu = menus[restaurant];
+
+      menu.forEach(dish => {
+        const li = document.createElement("li");
+        li.setAttribute("data-calories", dish.calories);
+        li.setAttribute("data-price", dish.price);
+
+        // Чекбокс для «исключить блюдо»
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.classList.add("excludeCheckbox");
+        cb.setAttribute("data-name", dish.name);
+
+        // Лейбл с названием и характеристиками блюда
+        const label = document.createElement("label");
+        label.textContent = `${dish.name} — ${dish.calories} ккал, ${dish.price}₽`;
+
+        li.appendChild(cb);
+        li.appendChild(label);
+        dishList.appendChild(li);
+      });
+
+      // Сразу скрываем/показываем блюда согласно текущим фильтрам
+      updateDishVisibility();
+    }
+
+    // Фильтрация видимости элементов списка
+    function updateDishVisibility() {
+      const maxC = parseInt(maxCaloriesInput.value) || Infinity;
+      const maxP = parse
