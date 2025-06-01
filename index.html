@@ -5,131 +5,127 @@
   <title>Fast Food Randomizer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: sans-serif;
-      background: #f6f6f6;
+      font-family: 'Montserrat', sans-serif;
       margin: 0;
       padding: 20px;
+      background: #f0f2f5;
       color: #333;
     }
-    .restaurant-toggle {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 20px;
+    h2, h3 {
+      color: #222;
     }
-    .restaurant-toggle button {
-      flex: 1;
-      padding: 10px;
-      margin: 5px;
+    .btn {
+      padding: 12px 24px;
+      margin: 8px 6px;
       border: none;
       border-radius: 12px;
-      background: #eee;
-      font-size: 16px;
+      background: #4CAF50;
+      color: white;
+      font-weight: 600;
       cursor: pointer;
+      transition: background 0.3s ease;
     }
-    .restaurant-toggle button.active {
-      background: #333;
-      color: #fff;
+    .btn:hover {
+      background: #3e8e41;
+    }
+    .section {
+      display: none;
+      margin-top: 20px;
     }
     .filters {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 20px;
-      gap: 10px;
+      margin: 15px 0;
     }
     .filters input {
-      width: 100%;
-      padding: 8px;
-      border-radius: 8px;
+      width: 80px;
+      padding: 6px;
+      margin-left: 8px;
+      border-radius: 6px;
       border: 1px solid #ccc;
     }
-    .dish-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 20px;
+    .dish {
+      background: white;
+      padding: 14px;
+      margin: 10px 0;
+      border-radius: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
     }
-    .dish-card {
-      background: #fff;
-      border-radius: 20px;
-      padding: 15px;
-      text-align: center;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      position: relative;
+    .dish.disabled {
+      opacity: 0.5;
+      text-decoration: line-through;
     }
-    .dish-card.disabled {
-      opacity: 0.4;
-    }
-    .dish-card img {
-      width: 100px;
-      height: 100px;
+    .dish img {
+      width: 60px;
+      height: 60px;
       object-fit: cover;
-      margin-bottom: 10px;
-    }
-    .dish-card button {
-      background: #ff4d4d;
-      border: none;
-      color: white;
-      padding: 5px 10px;
       border-radius: 10px;
-      margin-top: 10px;
-      cursor: pointer;
+      margin-right: 15px;
     }
-    .random-btn {
-      display: block;
-      margin: 0 auto 20px auto;
-      padding: 12px 20px;
-      background: #0088cc;
-      color: white;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
-      cursor: pointer;
+    .dish-info {
+      display: flex;
+      align-items: center;
+    }
+    .dish-details {
+      line-height: 1.3;
     }
   </style>
 </head>
 <body>
-  <div class="restaurant-toggle">
-    <button id="btn-mcdonalds" onclick="selectRestaurant('mcdonalds')">McDonald's</button>
-    <button id="btn-kfc" onclick="selectRestaurant('kfc')">KFC</button>
+  <h2>Выбери ресторан:</h2>
+  <button class="btn" onclick="selectRestaurant('mcdonalds')">McDonald's</button>
+  <button class="btn" onclick="selectRestaurant('kfc')">KFC</button>
+
+  <div id="menuSection" class="section">
+    <h3>Меню: <span id="restaurantName"></span></h3>
+
+    <div class="filters">
+      <label>Макс. калории: <input type="number" id="calorieFilter" value="1000"></label>
+      <label>Макс. цена ($): <input type="number" id="priceFilter" value="20"></label>
+      <button class="btn" onclick="filterAndPick()">🎲 Рандом</button>
+    </div>
+
+    <div id="dishList"></div>
   </div>
-
-  <div class="filters">
-    <input type="number" id="calorieFilter" placeholder="Max calories (kcal)" value="1000">
-    <input type="number" id="priceFilter" placeholder="Max price ($)" value="10">
-  </div>
-
-  <button class="random-btn" onclick="filterAndPick()">🎲 Random Dish</button>
-
-  <div class="dish-grid" id="dishList"></div>
 
   <script>
     Telegram.WebApp.ready();
 
     const menus = {
       mcdonalds: [
-        { name: "Біг Мак", calories: 526, price: 2.65, image: "https://i.imgur.com/I1bU1tF.png" },
-        { name: "Біг Тейсті", calories: 790, price: 4.35, image: "https://i.imgur.com/IbTf7fU.png" },
-        { name: "МакЧікен", calories: 448, price: 2.29, image: "https://i.imgur.com/g2hVURM.png" },
-        { name: "Філе-о-Фіш", calories: 379, price: 2.24, image: "https://i.imgur.com/DdZ4F3F.png" },
-        { name: "Дабл Чізбургер", calories: 475, price: 2.24, image: "https://i.imgur.com/WsJBOwN.png" }
+        { name: "Біг Мак®", calories: 526, price: 2.63, img: "https://i.imgur.com/F0dufZT.png" },
+        { name: "Біг Тейсті", calories: 790, price: 4.33, img: "https://i.imgur.com/2eJ0Vxn.png" },
+        { name: "Дабл Роял Чізбургер", calories: 760, price: 4.48, img: "https://i.imgur.com/BINzoD1.png" },
+        { name: "Роял Чізбургер", calories: 530, price: 2.98, img: "https://i.imgur.com/dFAZep9.png" },
+        { name: "МакЧікен", calories: 448, price: 2.28, img: "https://i.imgur.com/kDRn2d5.png" },
+        { name: "Філе-о-Фіш", calories: 379, price: 2.23, img: "https://i.imgur.com/lwaL2Be.png" },
+        { name: "Дабл Чізбургер", calories: 475, price: 2.23, img: "https://i.imgur.com/VQUDS6i.png" },
+        { name: "Чізбургер", calories: 298, price: 1.48, img: "https://i.imgur.com/fg1SrLf.png" },
+        { name: "Гамбургер", calories: 249, price: 1.25, img: "https://i.imgur.com/XYkKbsz.png" },
+        { name: "Чікен МакНагетс 6шт", calories: 265, price: 1.95, img: "https://i.imgur.com/QpqDR3Y.png" },
+        { name: "Чікен МакНагетс 9шт", calories: 398, price: 2.75, img: "https://i.imgur.com/ucZsb1Y.png" },
+        { name: "Чікен Джуніор", calories: 330, price: 1.75, img: "https://i.imgur.com/SVEtTJi.png" },
+        { name: "Курячі стріпси 3шт", calories: 200, price: 2.33, img: "https://i.imgur.com/9qz5X8A.png" }
       ],
       kfc: [
-        { name: "Zinger Burger", calories: 610, price: 2.75, image: "https://i.imgur.com/GeaKVcw.png" },
-        { name: "Twister", calories: 480, price: 2.49, image: "https://i.imgur.com/xZJ0Fez.png" },
-        { name: "Fries Box", calories: 320, price: 1.25, image: "https://i.imgur.com/QxU7V7n.png" },
-        { name: "Курячі стріпси", calories: 200, price: 2.35, image: "https://i.imgur.com/BvZaBvW.png" },
-        { name: "Чікен МакНагетс 6шт", calories: 265, price: 1.95, image: "https://i.imgur.com/xoB9tGm.png" }
+        { name: "Zinger Burger", calories: 610, price: 6, img: "https://i.imgur.com/DrlUPPs.png" },
+        { name: "Twister", calories: 480, price: 5, img: "https://i.imgur.com/z04v2Y2.png" },
+        { name: "Fries Box", calories: 320, price: 3, img: "https://i.imgur.com/DN9jHZr.png" }
       ]
     };
 
-    let selectedRestaurant = 'mcdonalds';
+    let selectedRestaurant = '';
     let excludedDishes = new Set();
 
-    function selectRestaurant(name) {
-      selectedRestaurant = name;
-      document.getElementById("btn-mcdonalds").classList.toggle("active", name === "mcdonalds");
-      document.getElementById("btn-kfc").classList.toggle("active", name === "kfc");
+    function selectRestaurant(restaurant) {
+      selectedRestaurant = restaurant;
+      document.getElementById("menuSection").style.display = "block";
+      document.getElementById("restaurantName").textContent =
+        restaurant === "mcdonalds" ? "McDonald's" : "KFC";
       renderMenu();
     }
 
@@ -147,13 +143,17 @@
       container.innerHTML = '';
       menus[selectedRestaurant].forEach(dish => {
         const div = document.createElement("div");
-        div.className = "dish-card" + (excludedDishes.has(dish.name) ? " disabled" : "");
+        div.className = "dish" + (excludedDishes.has(dish.name) ? " disabled" : "");
         div.innerHTML = `
-          <img src="${dish.image}" alt="${dish.name}" />
-          <div><strong>${dish.name}</strong></div>
-          <div>${dish.calories} kcal — $${dish.price.toFixed(2)}</div>
-          <button onclick="toggleDish('${dish.name}')">
-            ${excludedDishes.has(dish.name) ? "Enable" : "Exclude"}
+          <div class="dish-info">
+            <img src="${dish.img}" alt="${dish.name}">
+            <div class="dish-details">
+              <strong>${dish.name}</strong><br>
+              ${dish.calories} ккал — $${dish.price.toFixed(2)}
+            </div>
+          </div>
+          <button class="btn" style="background:#e74c3c;" onclick="toggleDish('${dish.name}')">
+            ${excludedDishes.has(dish.name) ? "Включить" : "Исключить"}
           </button>
         `;
         container.appendChild(div);
@@ -171,15 +171,13 @@
       );
 
       if (filtered.length === 0) {
-        alert("No suitable dishes found 😕");
+        alert("Нет подходящих блюд 😕");
         return;
       }
 
       const pick = filtered[Math.floor(Math.random() * filtered.length)];
-      Telegram.WebApp.showAlert(`🎉 Your dish: ${pick.name}`);
+      Telegram.WebApp.showAlert(`🎉 Твое блюдо: ${pick.name}`);
     }
-
-    selectRestaurant('mcdonalds');
   </script>
 </body>
 </html>
