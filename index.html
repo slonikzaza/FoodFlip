@@ -42,6 +42,11 @@
     .btn:hover:not(:disabled) {
       transform: translateY(-2px);
     }
+    .btn-danger {
+      background: linear-gradient(135deg, #EB5757, #BB2D3B);
+      width: 120px;
+      font-size: 14px;
+    }
     .section {
       display: none;
       margin-top: 20px;
@@ -110,6 +115,12 @@
       margin-top: 20px;
       text-align: right;
     }
+    .flex-center {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
   </style>
 </head>
 <body>
@@ -139,7 +150,7 @@
         <button class="btn" onclick="pickAnotherDish()">Інше (рандомно)</button>
       </div>
       <div style="margin-top:10px;">
-        <button id="modalExcludeBtn" class="btn" onclick="excludeCurrentDish()">Виключити з рандома</button>
+        <button id="modalExcludeBtn" class="btn-danger" onclick="excludeCurrentDish()">Виключити з рандома</button>
       </div>
     </div>
   </div>
@@ -151,32 +162,29 @@
     <!-- Вкладки: 1. Блюдо, 2. Соуси, 3. Напої -->
     <div id="dishesTab" class="tab active">
       <h4>1. Оберіть страву (з трьох):</h4>
-      <div id="firstChoices">
-        <!-- Генерується JS -->
-      </div>
+      <div id="firstChoices"></div>
       <div class="navigation-buttons">
+        <button id="randomDishBtn" class="btn" onclick="randomizeBuilderDish()">🎲 Рандом блюдо</button>
         <button id="toSaucesBtn" class="btn" onclick="toSauces()" disabled>Далі: Соуси</button>
       </div>
     </div>
 
     <div id="saucesTab" class="tab">
       <h4>2. Оберіть соус:</h4>
-      <div id="saucesList">
-        <!-- Генерується JS -->
-      </div>
+      <div id="saucesList"></div>
       <div class="navigation-buttons">
         <button class="btn" onclick="backToDishes()">Назад</button>
+        <button id="randomSauceBtn" class="btn" onclick="randomizeBuilderSauce()">🎲 Рандом соус</button>
         <button id="toDrinksBtn" class="btn" onclick="toDrinks()" disabled>Далі: Напої</button>
       </div>
     </div>
 
     <div id="drinksTab" class="tab">
       <h4>3. Оберіть напій:</h4>
-      <div id="drinksList">
-        <!-- Генерується JS -->
-      </div>
+      <div id="drinksList"></div>
       <div class="navigation-buttons">
         <button class="btn" onclick="backToSauces()">Назад</button>
+        <button id="randomDrinkBtn" class="btn" onclick="randomizeBuilderDrink()">🎲 Рандом напій</button>
         <button id="finishMenuBtn" class="btn" onclick="finishMenu()" disabled>Завершити меню</button>
       </div>
     </div>
@@ -237,7 +245,7 @@
     // === СТАН ===
     let selectedRestaurant = '';
     let excludedDishes = new Set();
-    let currentPickedDish = null;
+    let currentPickedDish = null; // для модалки
 
     let builderSelection = {
       dish: null,
@@ -270,7 +278,7 @@
               ${dish.calories} ккал — ₴${dish.price.toFixed(2)}
             </div>
           </div>
-          <button class="btn" onclick="toggleDish('${dish.name}')">
+          <button class="btn-danger" onclick="toggleDish('${dish.name}')">
             ${excludedDishes.has(dish.name) ? "Включити" : "Виключити"}
           </button>
         `;
@@ -349,31 +357,58 @@
     function chooseMenu() {
       if (!currentPickedDish) return;
       closeDishModal();
-      openMenuBuilder();
+      openMenuBuilder(currentPickedDish);
     }
 
     // --- ВІДКРИТИ БІЛДЕР МЕНЮ ---
-    function openMenuBuilder() {
+    function openMenuBuilder(prefilledDish = null) {
       selectedRestaurant = 'mcdonalds';
       document.getElementById("menuSection").style.display = "none";
       document.getElementById("menuBuilderSection").style.display = "block";
       builderSelection = { dish: null, sauce: null, drink: null, excludedBuilderDishes: new Set() };
-      renderFirstChoices();
+      if (prefilledDish) {
+        // Якщо передано головне рандом блюдо, відображаємо його в першій вкладці
+        builderSelection.dish = prefilledDish;
+        renderFirstChoices(true);
+        document.getElementById("toSaucesBtn").disabled = false;
+      } else {
+        renderFirstChoices(false);
+        document.getElementById("toSaucesBtn").disabled = true;
+      }
       renderSaucesList();
       renderDrinksList();
-      document.getElementById("toSaucesBtn").disabled = true;
       document.getElementById("toDrinksBtn").disabled = true;
       document.getElementById("finishMenuBtn").disabled = true;
       switchTab('saucesTab', 'dishesTab');
     }
 
-    // --- ВКЛАДКА 1: ВИБІР ІЗ ТРОХ (КАРТОПЛЯ ФРІ, ДІПИ, САЛАТ) ---
-    function renderFirstChoices() {
+    // --- ВКЛАДКА 1: ВИБІР ІЗ ТИХ ТРЬОХ + РАНДОМ + ВИКЛЮЧЕННЯ ---
+    function renderFirstChoices(prefilled = false) {
       const container = document.getElementById("firstChoices");
       container.innerHTML = '';
-      firstChoices.forEach(choice => {
+      if (prefilled && builderSelection.dish) {
+        // Показуємо лише prefilled блюдо
+        const d = builderSelection.dish;
         const div = document.createElement("div");
-        div.className = "item" + (builderSelection.dish && builderSelection.dish.name === choice.name ? " disabled" : "");
+        div.className = "item";
+        div.innerHTML = `
+          <div class="item-info">
+            <img src="${d.img}" alt="${d.name}">
+            <div class="item-details">
+              <strong>${d.name}</strong>
+            </div>
+          </div>
+          <button class="btn-danger" onclick="excludeBuilderDish('${d.name}')">
+            ${builderSelection.excludedBuilderDishes.has(d.name) ? "Включити" : "Виключити"}
+          </button>
+        `;
+        container.appendChild(div);
+        return;
+      }
+      firstChoices.forEach(choice => {
+        const isExcluded = builderSelection.excludedBuilderDishes.has(choice.name);
+        const div = document.createElement("div");
+        div.className = "item" + (builderSelection.dish && builderSelection.dish.name === choice.name ? "" : "");
         div.innerHTML = `
           <div class="item-info">
             <img src="${choice.img}" alt="${choice.name}">
@@ -381,28 +416,44 @@
               <strong>${choice.name}</strong>
             </div>
           </div>
-          <button class="btn" onclick="selectBuilderDish('${choice.name}')">
-            Вибрати
-          </button>
+          <div>
+            <button class="btn" onclick="selectBuilderDish('${choice.name}')" ${isExcluded ? 'disabled' : ''}>
+              Вибрати
+            </button>
+            <button class="btn-danger" onclick="toggleExcludeBuilderDish('${choice.name}')">
+              ${isExcluded ? "Включити" : "Виключити"}
+            </button>
+          </div>
         `;
         container.appendChild(div);
       });
     }
 
     function selectBuilderDish(name) {
-      const chosen = firstChoices.find(c => c.name === name);
-      builderSelection.dish = chosen;
-      builderSelection.excludedBuilderDishes.clear();
+      if (builderSelection.excludedBuilderDishes.has(name)) return;
+      builderSelection.dish = firstChoices.find(c => c.name === name);
       renderFirstChoices();
       document.getElementById("toSaucesBtn").disabled = false;
     }
 
+    function toggleExcludeBuilderDish(name) {
+      if (builderSelection.excludedBuilderDishes.has(name)) {
+        builderSelection.excludedBuilderDishes.delete(name);
+      } else {
+        builderSelection.excludedBuilderDishes.add(name);
+        if (builderSelection.dish && builderSelection.dish.name === name) {
+          builderSelection.dish = null;
+          document.getElementById("toSaucesBtn").disabled = true;
+        }
+      }
+      renderFirstChoices();
+    }
+
     function randomizeBuilderDish() {
-      // Видаляємо виключення
-      builderSelection.excludedBuilderDishes.clear();
-      const choices = firstChoices.slice();
+      // Обираємо серед перших трьох, виключаючи excluded
+      const choices = firstChoices.filter(c => !builderSelection.excludedBuilderDishes.has(c.name));
       if (choices.length === 0) {
-        alert("Немає доступних страв 😕");
+        alert("Немає доступних варіантів 😕");
         return;
       }
       const pick = choices[Math.floor(Math.random() * choices.length)];
@@ -429,15 +480,16 @@
               <strong>${s.name}</strong>
             </div>
           </div>
-          <button class="btn" onclick="selectBuilderSauce('${s.name}')">Вибрати</button>
+          <button class="btn" onclick="selectBuilderSauce('${s.name}')">
+            ${builderSelection.sauce && builderSelection.sauce.name === s.name ? "Обрано" : "Вибрати"}
+          </button>
         `;
         container.appendChild(div);
       });
     }
 
     function selectBuilderSauce(name) {
-      const chosen = sauces.find(s => s.name === name);
-      builderSelection.sauce = chosen;
+      builderSelection.sauce = sauces.find(s => s.name === name);
       renderSaucesList();
       document.getElementById("toDrinksBtn").disabled = false;
     }
@@ -477,15 +529,16 @@
               <strong>${d.name}</strong>
             </div>
           </div>
-          <button class="btn" onclick="selectBuilderDrink('${d.name}')">Вибрати</button>
+          <button class="btn" onclick="selectBuilderDrink('${d.name}')">
+            ${builderSelection.drink && builderSelection.drink.name === d.name ? "Обрано" : "Вибрати"}
+          </button>
         `;
         container.appendChild(div);
       });
     }
 
     function selectBuilderDrink(name) {
-      const chosen = drinks.find(d => d.name === name);
-      builderSelection.drink = chosen;
+      builderSelection.drink = drinks.find(d => d.name === name);
       renderDrinksList();
       document.getElementById("finishMenuBtn").disabled = false;
     }
@@ -522,9 +575,9 @@
       document.getElementById(showId).classList.add('active');
     }
 
-    // Ініціалізувати першу вкладку із трьома стравами
+    // Ініціалізувати першу вкладку із трьома варіантами
     function initFirstChoices() {
-      renderFirstChoices();
+      renderFirstChoices(false);
     }
     initFirstChoices();
   </script>
