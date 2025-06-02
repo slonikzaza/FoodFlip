@@ -42,12 +42,6 @@
     .btn:hover:not(:disabled) {
       transform: translateY(-2px);
     }
-    .btn-secondary {
-      background: linear-gradient(135deg, #F2994A, #F2C94C);
-    }
-    .btn-danger {
-      background: linear-gradient(135deg, #EB5757, #BB2D3B);
-    }
     .section {
       display: none;
       margin-top: 20px;
@@ -140,12 +134,12 @@
       <img id="modalDishImg" src="" alt="Dish Image">
       <h3 id="modalDishName"></h3>
       <div class="navigation-buttons">
-        <button class="btn-secondary" onclick="chooseOnlyDish()">Тільки блюдо</button>
-        <button class="btn-secondary" onclick="chooseMenu()">Вибрати меню</button>
-        <button class="btn-secondary" onclick="pickAnotherDish()">Інше (рандомно)</button>
+        <button class="btn" onclick="chooseOnlyDish()">Тільки блюдо</button>
+        <button class="btn" onclick="chooseMenu()">Вибрати меню</button>
+        <button class="btn" onclick="pickAnotherDish()">Інше (рандомно)</button>
       </div>
       <div style="margin-top:10px;">
-        <button id="modalExcludeBtn" class="btn-danger" onclick="excludeCurrentDish()">Виключити з рандома</button>
+        <button id="modalExcludeBtn" class="btn" onclick="excludeCurrentDish()">Виключити з рандома</button>
       </div>
     </div>
   </div>
@@ -156,36 +150,33 @@
 
     <!-- Вкладки: 1. Блюдо, 2. Соуси, 3. Напої -->
     <div id="dishesTab" class="tab active">
-      <h4>1. Оберіть страву:</h4>
-      <div id="selectedDish" class="item" style="justify-content: center; font-style: italic;">
-        Немає вибраного блюда
+      <h4>1. Оберіть страву (з трьох):</h4>
+      <div id="firstChoices">
+        <!-- Генерується JS -->
       </div>
       <div class="navigation-buttons">
-        <button id="randomDishBtn" class="btn" onclick="randomizeBuilderDish()">🎲 Рандом блюдо</button>
         <button id="toSaucesBtn" class="btn" onclick="toSauces()" disabled>Далі: Соуси</button>
       </div>
     </div>
 
     <div id="saucesTab" class="tab">
       <h4>2. Оберіть соус:</h4>
-      <div id="selectedSauce" class="item" style="justify-content: center; font-style: italic;">
-        Немає вибраного соусу
+      <div id="saucesList">
+        <!-- Генерується JS -->
       </div>
       <div class="navigation-buttons">
         <button class="btn" onclick="backToDishes()">Назад</button>
-        <button id="randomSauceBtn" class="btn-secondary" onclick="randomizeBuilderSauce()">🎲 Рандом соус</button>
         <button id="toDrinksBtn" class="btn" onclick="toDrinks()" disabled>Далі: Напої</button>
       </div>
     </div>
 
     <div id="drinksTab" class="tab">
       <h4>3. Оберіть напій:</h4>
-      <div id="selectedDrink" class="item" style="justify-content: center; font-style: italic;">
-        Немає вибраного напою
+      <div id="drinksList">
+        <!-- Генерується JS -->
       </div>
       <div class="navigation-buttons">
         <button class="btn" onclick="backToSauces()">Назад</button>
-        <button id="randomDrinkBtn" class="btn-secondary" onclick="randomizeBuilderDrink()">🎲 Рандом напій</button>
         <button id="finishMenuBtn" class="btn" onclick="finishMenu()" disabled>Завершити меню</button>
       </div>
     </div>
@@ -229,23 +220,30 @@
     ];
 
     const drinks = [
-      { name: "Coca-Cola" },
-      { name: "Fanta" },
-      { name: "Sprite" },
-      { name: "Вода" },
-      { name: "Чай холодний" }
+      { name: "Coca-Cola", img: "https://i.imgur.com/UyjY9v2.png" },
+      { name: "Fanta", img: "https://i.imgur.com/PQXtJQx.png" },
+      { name: "Sprite", img: "https://i.imgur.com/JkKz0Wb.png" },
+      { name: "Вода", img: "https://i.imgur.com/7sA5C2x.png" },
+      { name: "Чай холодний", img: "https://i.imgur.com/VBoXu3q.png" }
+    ];
+
+    // Три пропозиції першої вкладки
+    const firstChoices = [
+      { name: "Картопля фрі", img: "https://i.imgur.com/3pZe5kq.png" },
+      { name: "Діпи",       img: "https://i.imgur.com/Cl8vQTo.png" },
+      { name: "Салат",      img: "https://i.imgur.com/ODQ6oTs.png" }
     ];
 
     // === СТАН ===
     let selectedRestaurant = '';
     let excludedDishes = new Set();
-    let currentPickedDish = null; // для модалки
+    let currentPickedDish = null;
 
-    // Вибір для бидлера меню
     let builderSelection = {
       dish: null,
       sauce: null,
-      drink: null
+      drink: null,
+      excludedBuilderDishes: new Set()
     };
 
     // === ФУНКЦІЇ ===
@@ -272,7 +270,7 @@
               ${dish.calories} ккал — ₴${dish.price.toFixed(2)}
             </div>
           </div>
-          <button class="btn-danger" onclick="toggleDish('${dish.name}')">
+          <button class="btn" onclick="toggleDish('${dish.name}')">
             ${excludedDishes.has(dish.name) ? "Включити" : "Виключити"}
           </button>
         `;
@@ -315,7 +313,7 @@
       document.getElementById("modalDishImg").src = dish.img;
       document.getElementById("modalDishName").textContent = dish.name;
       document.getElementById("modalExcludeBtn").textContent =
-        excludedDishes.has(dish.name) ? "Включити" : "Виключити з рандома";
+        excludedDishes.has(dish.name) ? "Включити з рандома" : "Виключити з рандома";
       document.getElementById("dishModalOverlay").style.display = "flex";
     }
 
@@ -359,40 +357,57 @@
       selectedRestaurant = 'mcdonalds';
       document.getElementById("menuSection").style.display = "none";
       document.getElementById("menuBuilderSection").style.display = "block";
-      builderSelection = { dish: null, sauce: null, drink: null };
-      document.getElementById("selectedDish").textContent = "Немає вибраного блюда";
-      document.getElementById("selectedSauce").textContent = "Немає вибраного соусу";
-      document.getElementById("selectedDrink").textContent = "Немає вибраного напою";
+      builderSelection = { dish: null, sauce: null, drink: null, excludedBuilderDishes: new Set() };
+      renderFirstChoices();
+      renderSaucesList();
+      renderDrinksList();
       document.getElementById("toSaucesBtn").disabled = true;
       document.getElementById("toDrinksBtn").disabled = true;
       document.getElementById("finishMenuBtn").disabled = true;
       switchTab('saucesTab', 'dishesTab');
     }
 
-    // --- ВКЛАДКА 1: ВИБІР БЛЮДА РАНДОМО ---
+    // --- ВКЛАДКА 1: ВИБІР ІЗ ТРОХ (КАРТОПЛЯ ФРІ, ДІПИ, САЛАТ) ---
+    function renderFirstChoices() {
+      const container = document.getElementById("firstChoices");
+      container.innerHTML = '';
+      firstChoices.forEach(choice => {
+        const div = document.createElement("div");
+        div.className = "item" + (builderSelection.dish && builderSelection.dish.name === choice.name ? " disabled" : "");
+        div.innerHTML = `
+          <div class="item-info">
+            <img src="${choice.img}" alt="${choice.name}">
+            <div class="item-details">
+              <strong>${choice.name}</strong>
+            </div>
+          </div>
+          <button class="btn" onclick="selectBuilderDish('${choice.name}')">
+            Вибрати
+          </button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function selectBuilderDish(name) {
+      const chosen = firstChoices.find(c => c.name === name);
+      builderSelection.dish = chosen;
+      builderSelection.excludedBuilderDishes.clear();
+      renderFirstChoices();
+      document.getElementById("toSaucesBtn").disabled = false;
+    }
+
     function randomizeBuilderDish() {
-      const maxCalories = parseInt(document.getElementById("calorieFilter").value) || 9999;
-      const maxPrice = parseFloat(document.getElementById("priceFilter").value) || 9999;
-      const filtered = menus.mcdonalds.filter(d =>
-        d.calories <= maxCalories &&
-        d.price <= maxPrice &&
-        !excludedDishes.has(d.name)
-      );
-      if (filtered.length === 0) {
+      // Видаляємо виключення
+      builderSelection.excludedBuilderDishes.clear();
+      const choices = firstChoices.slice();
+      if (choices.length === 0) {
         alert("Немає доступних страв 😕");
         return;
       }
-      const pick = filtered[Math.floor(Math.random() * filtered.length)];
+      const pick = choices[Math.floor(Math.random() * choices.length)];
       builderSelection.dish = pick;
-      document.getElementById("selectedDish").innerHTML = `
-        <div class="item-info">
-          <img src="${pick.img}" alt="${pick.name}">
-          <div class="item-details">
-            <strong>${pick.name}</strong><br>
-            ${pick.calories} ккал — ₴${pick.price.toFixed(2)}
-          </div>
-        </div>
-      `;
+      renderFirstChoices();
       document.getElementById("toSaucesBtn").disabled = false;
     }
 
@@ -401,22 +416,41 @@
       switchTab('dishesTab', 'saucesTab');
     }
 
-    // --- ВКЛАДКА 2: ВИБІР СОУСУ РАНДОМО ---
+    // --- ВКЛАДКА 2: СОУСИ ---
+    function renderSaucesList() {
+      const container = document.getElementById("saucesList");
+      container.innerHTML = '';
+      sauces.forEach(s => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <div class="item-info">
+            <div class="item-details">
+              <strong>${s.name}</strong>
+            </div>
+          </div>
+          <button class="btn" onclick="selectBuilderSauce('${s.name}')">Вибрати</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function selectBuilderSauce(name) {
+      const chosen = sauces.find(s => s.name === name);
+      builderSelection.sauce = chosen;
+      renderSaucesList();
+      document.getElementById("toDrinksBtn").disabled = false;
+    }
+
     function randomizeBuilderSauce() {
-      const filtered = sauces.filter(s => true);
-      if (filtered.length === 0) {
+      const choices = sauces.slice();
+      if (choices.length === 0) {
         alert("Немає доступних соусів 😕");
         return;
       }
-      const pick = filtered[Math.floor(Math.random() * filtered.length)];
+      const pick = choices[Math.floor(Math.random() * choices.length)];
       builderSelection.sauce = pick;
-      document.getElementById("selectedSauce").innerHTML = `
-        <div class="item-info">
-          <div class="item-details">
-            <strong>${pick.name}</strong>
-          </div>
-        </div>
-      `;
+      renderSaucesList();
       document.getElementById("toDrinksBtn").disabled = false;
     }
 
@@ -429,22 +463,42 @@
       switchTab('saucesTab', 'drinksTab');
     }
 
-    // --- ВКЛАДКА 3: ВИБІР НАПОЮ РАНДОМО ---
+    // --- ВКЛАДКА 3: НАПОЇ ---
+    function renderDrinksList() {
+      const container = document.getElementById("drinksList");
+      container.innerHTML = '';
+      drinks.forEach(d => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <div class="item-info">
+            <img src="${d.img}" alt="${d.name}">
+            <div class="item-details">
+              <strong>${d.name}</strong>
+            </div>
+          </div>
+          <button class="btn" onclick="selectBuilderDrink('${d.name}')">Вибрати</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function selectBuilderDrink(name) {
+      const chosen = drinks.find(d => d.name === name);
+      builderSelection.drink = chosen;
+      renderDrinksList();
+      document.getElementById("finishMenuBtn").disabled = false;
+    }
+
     function randomizeBuilderDrink() {
-      const filtered = drinks.filter(d => true);
-      if (filtered.length === 0) {
+      const choices = drinks.slice();
+      if (choices.length === 0) {
         alert("Немає доступних напоїв 😕");
         return;
       }
-      const pick = filtered[Math.floor(Math.random() * filtered.length)];
+      const pick = choices[Math.floor(Math.random() * choices.length)];
       builderSelection.drink = pick;
-      document.getElementById("selectedDrink").innerHTML = `
-        <div class="item-info">
-          <div class="item-details">
-            <strong>${pick.name}</strong>
-          </div>
-        </div>
-      `;
+      renderDrinksList();
       document.getElementById("finishMenuBtn").disabled = false;
     }
 
@@ -467,6 +521,12 @@
       document.getElementById(hideId).classList.remove('active');
       document.getElementById(showId).classList.add('active');
     }
+
+    // Ініціалізувати першу вкладку із трьома стравами
+    function initFirstChoices() {
+      renderFirstChoices();
+    }
+    initFirstChoices();
   </script>
 </body>
 </html>
