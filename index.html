@@ -19,12 +19,18 @@
       margin-top: 0;
     }
     .btn {
-      padding: 12px 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 0;
       margin: 8px 6px;
+      width: 140px;
+      height: 48px;
       border: none;
-      border-radius: 12px;
+      border-radius: 24px;
       background: linear-gradient(135deg, #6DD5FA, #2980B9);
       color: white;
+      font-size: 16px;
       font-weight: 600;
       cursor: pointer;
       transition: opacity 0.3s ease, transform 0.2s ease;
@@ -150,30 +156,36 @@
 
     <!-- Вкладки: 1. Блюдо, 2. Соуси, 3. Напої -->
     <div id="dishesTab" class="tab active">
-      <h4>1. Оберіть одну страву:</h4>
-      <div id="firstChoices">
-        <!-- Три варіанти: Картопля фрі, Діпи, Салат -->
-        <!-- Будемо генерувати JS-ом -->
+      <h4>1. Оберіть страву:</h4>
+      <div id="selectedDish" class="item" style="justify-content: center; font-style: italic;">
+        Немає вибраного блюда
       </div>
       <div class="navigation-buttons">
+        <button id="randomDishBtn" class="btn" onclick="randomizeBuilderDish()">🎲 Рандом блюдо</button>
         <button id="toSaucesBtn" class="btn" onclick="toSauces()" disabled>Далі: Соуси</button>
       </div>
     </div>
 
     <div id="saucesTab" class="tab">
       <h4>2. Оберіть соус:</h4>
-      <div id="saucesList"></div>
+      <div id="selectedSauce" class="item" style="justify-content: center; font-style: italic;">
+        Немає вибраного соусу
+      </div>
       <div class="navigation-buttons">
         <button class="btn" onclick="backToDishes()">Назад</button>
+        <button id="randomSauceBtn" class="btn-secondary" onclick="randomizeBuilderSauce()">🎲 Рандом соус</button>
         <button id="toDrinksBtn" class="btn" onclick="toDrinks()" disabled>Далі: Напої</button>
       </div>
     </div>
 
     <div id="drinksTab" class="tab">
       <h4>3. Оберіть напій:</h4>
-      <div id="drinksList"></div>
+      <div id="selectedDrink" class="item" style="justify-content: center; font-style: italic;">
+        Немає вибраного напою
+      </div>
       <div class="navigation-buttons">
         <button class="btn" onclick="backToSauces()">Назад</button>
+        <button id="randomDrinkBtn" class="btn-secondary" onclick="randomizeBuilderDrink()">🎲 Рандом напій</button>
         <button id="finishMenuBtn" class="btn" onclick="finishMenu()" disabled>Завершити меню</button>
       </div>
     </div>
@@ -188,7 +200,18 @@
         { name: "Біг Мак®", calories: 526, price: 141, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3413_BigMac.png" },
         { name: "Біг Тейсті Сингл", calories: 620, price: 192, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_3442_Sdwch_Big_Tasty_Single.jpg" },
         { name: "Тейсті Джуніор", calories: 400, price: 104, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_3441_Sdwch_Big_Tasty_Junior.jpg" },
-        // ... інші страви
+        { name: "Дабл Біг Тейсті", calories: 880, price: 271, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_3443_Sdwch_Big_Tasty_Double.jpg" },
+        { name: "Дабл Роял Чізбургер", calories: 760, price: 240, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3415_DoubleRoyalCheeseburger_2.png" },
+        { name: "Роял Чізбургер", calories: 530, price: 161, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3414_RoyalCheeseburger_2.png" },
+        { name: "МакЧікен", calories: 448, price: 119, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3416_McChicken.png" },
+        { name: "Філе-о-Фіш", calories: 379, price: 117, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3412_File-o-Fish_2025.png" },
+        { name: "Дабл Чізбургер", calories: 475, price: 121, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3411_DoubleCheeseburger.png" },
+        { name: "Чізбургер", calories: 298, price: 73, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3409_Cheeseburger.png" },
+        { name: "Гамбургер", calories: 249, price: 63, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3408_Hamburger.png" },
+        { name: "Чікен МакНагетс 6шт", calories: 265, price: 101, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_2130_Nuggets_6.png" },
+        { name: "Чікен МакНагетс 9шт", calories: 398, price: 145, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_2131_Nuggets_9.png" },
+        { name: "Чікен Джуніор", calories: 330, price: 73, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3426_CHICKEN_JUNIOR_BEST.png" },
+        { name: "Курячі стріпси 3шт", calories: 200, price: 97, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3500_3strips.png" }
       ],
       kfc: [
         { name: "Zinger Burger", calories: 610, price: 6, img: "https://i.imgur.com/DrlUPPs.png" },
@@ -213,23 +236,16 @@
       { name: "Чай холодний" }
     ];
 
-    // Перелік із трьох пропозицій для першої вкладки
-    const firstChoices = [
-      { name: "Картопля фрі", img: "https://i.imgur.com/3pZe5kq.png" },
-      { name: "Діпи",       img: "https://i.imgur.com/Cl8vQTo.png" },
-      { name: "Салат",      img: "https://i.imgur.com/ODQ6oTs.png" }
-    ];
-
     // === СТАН ===
     let selectedRestaurant = '';
     let excludedDishes = new Set();
     let currentPickedDish = null; // для модалки
+
+    // Вибір для бидлера меню
     let builderSelection = {
-      firstDish: null,    // вибрана одна страва із трьох
+      dish: null,
       sauce: null,
-      drink: null,
-      saucesExcl: new Set(),
-      drinksExcl: new Set()
+      drink: null
     };
 
     // === ФУНКЦІЇ ===
@@ -343,121 +359,65 @@
       selectedRestaurant = 'mcdonalds';
       document.getElementById("menuSection").style.display = "none";
       document.getElementById("menuBuilderSection").style.display = "block";
-      // Скидаємо вибори
-      builderSelection = {
-        firstDish: null,
-        sauce: null,
-        drink: null,
-        saucesExcl: new Set(),
-        drinksExcl: new Set()
-      };
-      renderFirstChoices();
-      renderSaucesList();
-      renderDrinksList();
-      updateToSaucesButton();
-      updateToDrinksButton();
-      updateFinishButton();
+      builderSelection = { dish: null, sauce: null, drink: null };
+      document.getElementById("selectedDish").textContent = "Немає вибраного блюда";
+      document.getElementById("selectedSauce").textContent = "Немає вибраного соусу";
+      document.getElementById("selectedDrink").textContent = "Немає вибраного напою";
+      document.getElementById("toSaucesBtn").disabled = true;
+      document.getElementById("toDrinksBtn").disabled = true;
+      document.getElementById("finishMenuBtn").disabled = true;
       switchTab('saucesTab', 'dishesTab');
     }
 
-    // --- ВКЛАДКА 1: ВИБІР ІЗ ТРЬОХ СТРАВ ---
-    function renderFirstChoices() {
-      const container = document.getElementById("firstChoices");
-      container.innerHTML = '';
-      firstChoices.forEach(choice => {
-        const div = document.createElement("div");
-        div.className = "item" + (builderSelection.firstDish && builderSelection.firstDish.name === choice.name ? " active" : "");
-        div.innerHTML = `
-          <div class="item-info">
-            <img src="${choice.img}" alt="${choice.name}">
-            <div class="item-details">
-              <strong>${choice.name}</strong>
-            </div>
+    // --- ВКЛАДКА 1: ВИБІР БЛЮДА РАНДОМО ---
+    function randomizeBuilderDish() {
+      const maxCalories = parseInt(document.getElementById("calorieFilter").value) || 9999;
+      const maxPrice = parseFloat(document.getElementById("priceFilter").value) || 9999;
+      const filtered = menus.mcdonalds.filter(d =>
+        d.calories <= maxCalories &&
+        d.price <= maxPrice &&
+        !excludedDishes.has(d.name)
+      );
+      if (filtered.length === 0) {
+        alert("Немає доступних страв 😕");
+        return;
+      }
+      const pick = filtered[Math.floor(Math.random() * filtered.length)];
+      builderSelection.dish = pick;
+      document.getElementById("selectedDish").innerHTML = `
+        <div class="item-info">
+          <img src="${pick.img}" alt="${pick.name}">
+          <div class="item-details">
+            <strong>${pick.name}</strong><br>
+            ${pick.calories} ккал — ₴${pick.price.toFixed(2)}
           </div>
-          <button class="btn-secondary" onclick="pickFirstDish('${choice.name}')">🎲</button>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    function pickFirstDish(name) {
-      builderSelection.firstDish = firstChoices.find(c => c.name === name);
-      renderFirstChoices();
-      updateToSaucesButton();
-    }
-
-    function updateToSaucesButton() {
-      document.getElementById("toSaucesBtn").disabled = !builderSelection.firstDish;
+        </div>
+      `;
+      document.getElementById("toSaucesBtn").disabled = false;
     }
 
     function toSauces() {
-      if (!builderSelection.firstDish) return;
+      if (!builderSelection.dish) return;
       switchTab('dishesTab', 'saucesTab');
     }
 
-    // --- ВКЛАДКА 2: СОУСИ ---
-    function renderSaucesList() {
-      const container = document.getElementById("saucesList");
-      container.innerHTML = '';
-      sauces.forEach(s => {
-        const div = document.createElement("div");
-        div.className = "item" + (builderSelection.saucesExcl.has(s.name) ? " disabled" : "");
-        div.innerHTML = `
-          <div class="item-info">
-            <div class="item-details">
-              <strong>${s.name}</strong>
-            </div>
-          </div>
-          <div>
-            <button class="btn-secondary" onclick="pickSauce('${s.name}')">🎲</button>
-            <button class="btn-danger" onclick="toggleSauceExclusion('${s.name}')">
-              ${builderSelection.saucesExcl.has(s.name) ? "Включити" : "Виключити"}
-            </button>
-          </div>
-        `;
-        container.appendChild(div);
-      });
-      highlightSelectedSauce();
-    }
-
-    function pickSauce(name) {
-      if (builderSelection.saucesExcl.has(name)) return;
-      builderSelection.sauce = sauces.find(s => s.name === name);
-      renderSaucesList();
-      updateToDrinksButton();
-    }
-
-    function toggleSauceExclusion(name) {
-      if (builderSelection.saucesExcl.has(name)) {
-        builderSelection.saucesExcl.delete(name);
-        if (builderSelection.sauce && builderSelection.sauce.name === name) {
-          builderSelection.sauce = null;
-        }
-      } else {
-        builderSelection.saucesExcl.add(name);
-        if (builderSelection.sauce && builderSelection.sauce.name === name) {
-          builderSelection.sauce = null;
-        }
+    // --- ВКЛАДКА 2: ВИБІР СОУСУ РАНДОМО ---
+    function randomizeBuilderSauce() {
+      const filtered = sauces.filter(s => true);
+      if (filtered.length === 0) {
+        alert("Немає доступних соусів 😕");
+        return;
       }
-      renderSaucesList();
-      updateToDrinksButton();
-    }
-
-    function highlightSelectedSauce() {
-      if (!builderSelection.sauce) return;
-      const items = document.querySelectorAll('#saucesList .item');
-      items.forEach(div => {
-        const title = div.querySelector('.item-details').textContent.trim();
-        if (title === builderSelection.sauce.name) {
-          div.style.background = "#d4f0d4";
-        } else {
-          div.style.background = "white";
-        }
-      });
-    }
-
-    function updateToDrinksButton() {
-      document.getElementById("toDrinksBtn").disabled = !builderSelection.sauce;
+      const pick = filtered[Math.floor(Math.random() * filtered.length)];
+      builderSelection.sauce = pick;
+      document.getElementById("selectedSauce").innerHTML = `
+        <div class="item-info">
+          <div class="item-details">
+            <strong>${pick.name}</strong>
+          </div>
+        </div>
+      `;
+      document.getElementById("toDrinksBtn").disabled = false;
     }
 
     function backToDishes() {
@@ -469,80 +429,34 @@
       switchTab('saucesTab', 'drinksTab');
     }
 
-    // --- ВКЛАДКА 3: НАПОЇ ---
-    function renderDrinksList() {
-      const container = document.getElementById("drinksList");
-      container.innerHTML = '';
-      drinks.forEach(d => {
-        const div = document.createElement("div");
-        div.className = "item" + (builderSelection.drinksExcl.has(d.name) ? " disabled" : "");
-        div.innerHTML = `
-          <div class="item-info">
-            <div class="item-details">
-              <strong>${d.name}</strong>
-            </div>
-          </div>
-          <div>
-            <button class="btn-secondary" onclick="pickDrink('${d.name}')">🎲</button>
-            <button class="btn-danger" onclick="toggleDrinkExclusion('${d.name}')">
-              ${builderSelection.drinksExcl.has(d.name) ? "Включити" : "Виключити"}
-            </button>
-          </div>
-        `;
-        container.appendChild(div);
-      });
-      highlightSelectedDrink();
-    }
-
-    function pickDrink(name) {
-      if (builderSelection.drinksExcl.has(name)) return;
-      builderSelection.drink = drinks.find(d => d.name === name);
-      renderDrinksList();
-      updateFinishButton();
-    }
-
-    function toggleDrinkExclusion(name) {
-      if (builderSelection.drinksExcl.has(name)) {
-        builderSelection.drinksExcl.delete(name);
-        if (builderSelection.drink && builderSelection.drink.name === name) {
-          builderSelection.drink = null;
-        }
-      } else {
-        builderSelection.drinksExcl.add(name);
-        if (builderSelection.drink && builderSelection.drink.name === name) {
-          builderSelection.drink = null;
-        }
+    // --- ВКЛАДКА 3: ВИБІР НАПОЮ РАНДОМО ---
+    function randomizeBuilderDrink() {
+      const filtered = drinks.filter(d => true);
+      if (filtered.length === 0) {
+        alert("Немає доступних напоїв 😕");
+        return;
       }
-      renderDrinksList();
-      updateFinishButton();
-    }
-
-    function highlightSelectedDrink() {
-      if (!builderSelection.drink) return;
-      const items = document.querySelectorAll('#drinksList .item');
-      items.forEach(div => {
-        const title = div.querySelector('.item-details').textContent.trim();
-        if (title === builderSelection.drink.name) {
-          div.style.background = "#d4f0d4";
-        } else {
-          div.style.background = "white";
-        }
-      });
+      const pick = filtered[Math.floor(Math.random() * filtered.length)];
+      builderSelection.drink = pick;
+      document.getElementById("selectedDrink").innerHTML = `
+        <div class="item-info">
+          <div class="item-details">
+            <strong>${pick.name}</strong>
+          </div>
+        </div>
+      `;
+      document.getElementById("finishMenuBtn").disabled = false;
     }
 
     function backToSauces() {
       switchTab('drinksTab', 'saucesTab');
     }
 
-    function updateFinishButton() {
-      document.getElementById("finishMenuBtn").disabled = !builderSelection.drink;
-    }
-
     function finishMenu() {
-      const firstDish = builderSelection.firstDish.name;
+      const dishName = builderSelection.dish.name;
       const sauceName = builderSelection.sauce.name;
       const drinkName = builderSelection.drink.name;
-      alert(`Ваше меню:\n\nСтрава: ${firstDish}\nСоус: ${sauceName}\nНапій: ${drinkName}`);
+      alert(`Ваше меню:\n\nСтрава: ${dishName}\nСоус: ${sauceName}\nНапій: ${drinkName}`);
       document.getElementById("menuBuilderSection").style.display = "none";
       document.getElementById("menuSection").style.display = "block";
       renderMenu();
@@ -553,12 +467,6 @@
       document.getElementById(hideId).classList.remove('active');
       document.getElementById(showId).classList.add('active');
     }
-
-    // Ініціалізуємо першу вкладку з трьома варіантами
-    function initFirstChoices() {
-      renderFirstChoices();
-    }
-    initFirstChoices();
   </script>
 </body>
 </html>
