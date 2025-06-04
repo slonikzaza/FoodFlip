@@ -45,8 +45,26 @@
       opacity: 0.5;
       cursor: not-allowed;
     }
+    /* Оновлений стиль для кнопки "Виключити" */
     .btn-danger {
-      background: #BB2D3B;
+      background: #e74c3c;         /* Більш приємний червоний відтінок */
+      border-radius: 20px;         /* Сильно округлені кути */
+      color: #fff;
+      padding: 14px 24px;
+      font-size: 18px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+    .btn-danger:hover:not(:disabled) {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    .btn-danger:active:not(:disabled) {
+      transform: scale(0.97);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     }
     .section {
       display: none;
