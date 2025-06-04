@@ -10,46 +10,47 @@
     body {
       font-family: 'Montserrat', sans-serif;
       margin: 0;
-      padding: 20px;
+      padding: 16px;
       background: #f0f2f5;
       color: #333;
     }
     h2, h3, h4 {
       color: #222;
       margin-top: 0;
+      font-size: 1.2rem;
     }
+    /* Кнопки: без градієнту, із круглішими кутами, збільшені для мобільних */
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 12px 0;
-      margin: 8px 6px;
-      width: 140px;
-      height: 48px;
+      padding: 14px 24px;
+      margin: 8px 0;
+      width: 100%;
+      max-width: 240px;
       border: none;
-      border-radius: 24px;
-      background: linear-gradient(135deg, #6DD5FA, #2980B9);
+      border-radius: 12px;
+      background: #2980B9;
       color: white;
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 600;
       cursor: pointer;
       transition: opacity 0.3s ease, transform 0.2s ease;
+    }
+    .btn:hover:not(:disabled) {
+      opacity: 0.9;
+      transform: translateY(-1px);
     }
     .btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
-    .btn:hover:not(:disabled) {
-      transform: translateY(-2px);
-    }
     .btn-danger {
-      background: linear-gradient(135deg, #EB5757, #BB2D3B);
-      width: 120px;
-      font-size: 14px;
+      background: #BB2D3B;
     }
     .section {
       display: none;
-      margin-top: 20px;
+      margin-top: 24px;
     }
     .modal-overlay {
       position: fixed;
@@ -66,60 +67,79 @@
       padding: 20px;
       border-radius: 16px;
       width: 90%;
-      max-width: 400px;
+      max-width: 360px;
       text-align: center;
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
     .modal img {
-      width: 160px;
-      height: 160px;
+      width: 140px;
+      height: 140px;
       object-fit: cover;
       border-radius: 12px;
       margin-bottom: 12px;
     }
     .item {
       background: #fff;
-      padding: 14px;
-      margin: 10px 0;
-      border-radius: 16px;
+      padding: 16px;
+      margin: 12px 0;
+      border-radius: 12px;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-direction: column;
       box-shadow: 0 4px 8px rgba(0,0,0,0.05);
     }
-    .item img {
-      width: 60px;
-      height: 60px;
-      object-fit: cover;
-      border-radius: 10px;
-      margin-right: 15px;
+    .item.disabled {
+      opacity: 0.5;
+      text-decoration: line-through;
     }
     .item-info {
       display: flex;
       align-items: center;
     }
-    .item-details {
-      line-height: 1.3;
+    .item img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-right: 12px;
     }
-    .disabled {
-      opacity: 0.5;
-      text-decoration: line-through;
+    .item-details {
+      line-height: 1.4;
+      font-size: 16px;
     }
     .navigation-buttons {
       margin-top: 20px;
       text-align: right;
     }
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
     .filters label {
-      margin-right: 20px;
-      font-size: 14px;
+      font-size: 16px;
     }
     .filters input {
       width: 60px;
-      margin-left: 6px;
-      padding: 4px;
-      border-radius: 4px;
+      margin-left: 8px;
+      padding: 6px;
+      border-radius: 6px;
       border: 1px solid #ccc;
-      font-size: 14px;
+      font-size: 16px;
+    }
+    @media (max-width: 480px) {
+      .btn {
+        font-size: 16px;
+        padding: 12px 20px;
+        max-width: 100%;
+      }
+      .item-details {
+        font-size: 14px;
+      }
+      .filters input {
+        width: 50px;
+        font-size: 14px;
+      }
     }
   </style>
 </head>
@@ -139,7 +159,7 @@
     <h3>Розділ: <span id="categoryName"></span></h3>
     <div class="filters">
       <label>Макс. калорії:<input type="number" id="calorieFilter" value="1000"></label>
-      <label>Макс. ціна (₴): <input type="number" id="priceFilter" value="1000"></label>
+      <label>Макс. ціна (₴):<input type="number" id="priceFilter" value="1000"></label>
       <button class="btn" onclick="filterAndPick()">🎲 Рандом</button>
     </div>
     <div id="dishList"></div>
@@ -152,7 +172,6 @@
       <h3 id="modalDishName"></h3>
       <div class="navigation-buttons">
         <button class="btn" onclick="chooseOnlyDish()">Тільки страву</button>
-        <!-- Якщо у страви є додаткове меню (наприклад, у бургерів), показувати кнопку "Вибрати меню" -->
         <button class="btn" id="modalMenuBtn" style="display: none;" onclick="chooseMenu()">Вибрати меню</button>
         <button class="btn" onclick="pickAnotherDish()">Інше (рандомно)</button>
       </div>
@@ -201,7 +220,6 @@
     Telegram.WebApp.ready();
 
     // === ДАНІ: РОЗДІЛИ ТА СТРАВИ ===
-    // Для категорії "burgers" використано готовий масив із кодом бургерів. Інші розділи можна доповнити даними аналогічно.
     const menuCategories = {
       burgers: [
         { name: "Біг Мак®", calories: 526, price: 141, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3413_BigMac.png", hasMenu: true },
@@ -221,8 +239,6 @@
         { name: "Курячі стріпси 3шт", calories: 200, price: 97, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3500_3strips.png", hasMenu: true }
       ],
       chicken: [
-        // Точно ті самі "Чікен МакНагетс", "Чікен Джуніор" та "Курячі стріпси" вже є в розділі burgers з hasMenu: true.
-        // Ви можете дублювати їх або вказати окремо:
         { name: "Чікен МакНагетс 6шт", calories: 265, price: 101, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_2130_Nuggets_6.png", hasMenu: false },
         { name: "Чікен МакНагетс 9шт", calories: 398, price: 145, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_2131_Nuggets_9.png", hasMenu: false },
         { name: "Чікен Джуніор", calories: 330, price: 73, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3426_CHICKEN_JUNIOR_BEST.png", hasMenu: false },
@@ -283,14 +299,12 @@
       { name: "Чай холодний", img: "https://i.imgur.com/VBoXu3q.png" }
     ];
 
-    // Для меню-білдера (тільки «бургерів») ми беремо три варіанти:
     const firstChoices = [
       { name: "Картопля фрі", img: "https://i.imgur.com/3pZe5kq.png" },
       { name: "Діпи",       img: "https://i.imgur.com/Cl8vQTo.png" },
       { name: "Салат",      img: "https://i.imgur.com/ODQ6oTs.png" }
     ];
 
-    // === СТАН ===
     let selectedCategory = '';
     let excludedDishes = new Set();
     let currentPickedDish = null;
@@ -301,8 +315,6 @@
       drink: null,
       excludedBuilderDishes: new Set()
     };
-
-    // === ФУНКЦІЇ ===
 
     // Вибір розділу меню
     function selectCategory(category) {
@@ -346,7 +358,7 @@
               ${dish.calories} ккал — ₴${dish.price.toFixed(2)}
             </div>
           </div>
-          <div>
+          <div class="navigation-buttons">
             <button class="btn" onclick="pickThisDish('${dish.name}')" ${isExcluded ? 'disabled' : ''}>
               Вибрати
             </button>
@@ -359,7 +371,6 @@
       });
     }
 
-    // Виключити/включити страву з рандома
     function toggleDish(name) {
       if (excludedDishes.has(name)) {
         excludedDishes.delete(name);
@@ -369,7 +380,6 @@
       renderMenu();
     }
 
-    // Вибрати конкретну страву через кнопку «Вибрати»
     function pickThisDish(name) {
       const list = menuCategories[selectedCategory] || [];
       const dish = list.find(d => d.name === name);
@@ -377,7 +387,6 @@
       showDishModal(dish);
     }
 
-    // Фільтрувати за калоріями та ціною і випадковим чином вибрати
     function filterAndPick() {
       const maxCalories = parseInt(document.getElementById("calorieFilter").value) || Infinity;
       const maxPrice = parseFloat(document.getElementById("priceFilter").value) || Infinity;
@@ -395,7 +404,6 @@
       showDishModal(pick);
     }
 
-    // Показати модальне вікно з інформацією про страву
     function showDishModal(dish) {
       currentPickedDish = dish;
       const imgSrc = dish.img || "https://via.placeholder.com/160";
@@ -404,7 +412,6 @@
       document.getElementById("modalExcludeBtn").textContent =
         excludedDishes.has(dish.name) ? "Включити з рандома" : "Виключити з рандома";
 
-      // Якщо страва має власне меню (hasMenu === true), показати кнопку
       const menuBtn = document.getElementById("modalMenuBtn");
       if (dish.hasMenu) {
         menuBtn.style.display = "inline-flex";
@@ -444,7 +451,6 @@
       alert(`Ви обрали страву: ${name}`);
     }
 
-    // Якщо страва має меню (наприклад, бургери), відкриваємо білдер
     function chooseMenu() {
       if (!currentPickedDish) return;
       closeDishModal();
@@ -453,13 +459,11 @@
 
     // --- Білдер меню (тільки для «burgers») ---
     function openMenuBuilder(prefilledDish = null) {
-      selectedCategory = 'burgers'; // переконаємось, що в білдері працюємо з бурґерами
+      selectedCategory = 'burgers';
       document.getElementById("menuSection").style.display = "none";
       document.getElementById("menuBuilderSection").style.display = "block";
-      // Очистити стан білдера
       builderSelection = { dish: null, sauce: null, drink: null, excludedBuilderDishes: new Set() };
 
-      // Налаштувати вкладки
       document.getElementById('dishesTab').classList.add('active');
       document.getElementById('saucesTab').classList.remove('active');
       document.getElementById('drinksTab').classList.remove('active');
@@ -478,12 +482,10 @@
       document.getElementById("finishMenuBtn").disabled = true;
     }
 
-    // --- Вкладка 1: вибір із трьох (або передзаповнене) + виключення + рандом ---
     function renderFirstChoices(prefilled = false) {
       const container = document.getElementById("firstChoices");
       container.innerHTML = '';
       if (prefilled && builderSelection.dish) {
-        // Показати лише вже обрану страву
         const d = builderSelection.dish;
         const div = document.createElement("div");
         div.className = "item";
@@ -514,7 +516,7 @@
               <strong>${choice.name}</strong>
             </div>
           </div>
-          <div>
+          <div class="navigation-buttons">
             <button class="btn" onclick="selectBuilderDish('${choice.name}')" ${isExcluded ? 'disabled' : ''}>
               ${isSelected ? "Обрано" : "Вибрати"}
             </button>
@@ -529,7 +531,6 @@
 
     function selectBuilderDish(name) {
       if (builderSelection.excludedBuilderDishes.has(name)) return;
-      // У білдері «страви» ми допускаємо три варіанти (перші зі списку firstChoices)
       builderSelection.dish = firstChoices.find(c => c.name === name);
       renderFirstChoices();
       document.getElementById("toSaucesBtn").disabled = false;
@@ -567,7 +568,6 @@
       document.getElementById('drinksTab').classList.remove('active');
     }
 
-    // --- Вкладка 2: Соуси ---
     function renderSaucesList() {
       const container = document.getElementById("saucesList");
       container.innerHTML = '';
@@ -615,7 +615,6 @@
       document.getElementById('dishesTab').classList.remove('active');
     }
 
-    // --- Вкладка 3: Напої ---
     function renderDrinksList() {
       const container = document.getElementById("drinksList");
       container.innerHTML = '';
@@ -667,7 +666,6 @@
       renderMenu();
     }
 
-    // Ініціалізуємо білдер, приховавши вкладки окрім першої
     function initFirstChoices() {
       renderFirstChoices(false);
       document.getElementById('dishesTab').classList.add('active');
