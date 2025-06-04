@@ -77,12 +77,6 @@
       border-radius: 12px;
       margin-bottom: 12px;
     }
-    .tab {
-      display: none;
-    }
-    .tab.active {
-      display: block;
-    }
     .item {
       background: #fff;
       padding: 14px;
@@ -115,16 +109,34 @@
       margin-top: 20px;
       text-align: right;
     }
+    .filters label {
+      margin-right: 20px;
+      font-size: 14px;
+    }
+    .filters input {
+      width: 60px;
+      margin-left: 6px;
+      padding: 4px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
-  <h2>Вибери ресторан:</h2>
-  <button class="btn" onclick="selectRestaurant('mcdonalds')">McDonald's</button>
-  <button class="btn" onclick="selectRestaurant('kfc')">Soon</button>
+  <h2>Вибери розділ меню:</h2>
+  <button class="btn" onclick="selectCategory('burgers')">🍔 Бургери та роли</button>
+  <button class="btn" onclick="selectCategory('chicken')">🍗 Курка</button>
+  <button class="btn" onclick="selectCategory('fries')">🍟 Картопля/Каша/Салати</button>
+  <button class="btn" onclick="selectCategory('drinks')">🥤 Напої</button>
+  <button class="btn" onclick="selectCategory('coffee')">☕ Кава</button>
+  <button class="btn" onclick="selectCategory('desserts')">🍰 Десерти</button>
+  <button class="btn" onclick="selectCategory('happyMeal')">🧃 Хеппі Міл</button>
+  <button class="btn" onclick="selectCategory('breakfast')">🍳 Сніданок</button>
 
-  <!-- Основне меню -->
+  <!-- Меню обраного розділу -->
   <div id="menuSection" class="section">
-    <h3>Меню: <span id="restaurantName"></span></h3>
+    <h3>Розділ: <span id="categoryName"></span></h3>
     <div class="filters">
       <label>Макс. калорії:<input type="number" id="calorieFilter" value="1000"></label>
       <label>Макс. ціна (₴): <input type="number" id="priceFilter" value="1000"></label>
@@ -133,14 +145,15 @@
     <div id="dishList"></div>
   </div>
 
-  <!-- Модальне вікно для вибраної страви (McDonald's) -->
+  <!-- Модальне вікно для вибраної страви -->
   <div id="dishModalOverlay" class="modal-overlay">
     <div class="modal" id="dishModal">
       <img id="modalDishImg" src="" alt="Dish Image">
       <h3 id="modalDishName"></h3>
       <div class="navigation-buttons">
-        <button class="btn" onclick="chooseOnlyDish()">Тільки блюдо</button>
-        <button class="btn" onclick="chooseMenu()">Вибрати меню</button>
+        <button class="btn" onclick="chooseOnlyDish()">Тільки страву</button>
+        <!-- Якщо у страви є додаткове меню (наприклад, у бургерів), показувати кнопку "Вибрати меню" -->
+        <button class="btn" id="modalMenuBtn" style="display: none;" onclick="chooseMenu()">Вибрати меню</button>
         <button class="btn" onclick="pickAnotherDish()">Інше (рандомно)</button>
       </div>
       <div style="margin-top:10px;">
@@ -149,7 +162,7 @@
     </div>
   </div>
 
-  <!-- Секція створення меню McDonald's -->
+  <!-- Секція створення меню (тільки для бургерів) -->
   <div id="menuBuilderSection" class="section">
     <h3>Створити меню McDonald's</h3>
 
@@ -187,29 +200,70 @@
   <script>
     Telegram.WebApp.ready();
 
-    // === ДАНІ ===
-    const menus = {
-      mcdonalds: [
-        { name: "Біг Мак®", calories: 526, price: 141, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3413_BigMac.png" },
-        { name: "Біг Тейсті Сингл", calories: 620, price: 192, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_3442_Sdwch_Big_Tasty_Single.jpg" },
-        { name: "Тейсті Джуніор", calories: 400, price: 104, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_3441_Sdwch_Big_Tasty_Junior.jpg" },
-        { name: "Дабл Біг Тейсті", calories: 880, price: 271, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_3443_Sdwch_Big_Tasty_Double.jpg" },
-        { name: "Дабл Роял Чізбургер", calories: 760, price: 240, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3415_DoubleRoyalCheeseburger_2.png" },
-        { name: "Роял Чізбургер", calories: 530, price: 161, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3414_RoyalCheeseburger_2.png" },
-        { name: "МакЧікен", calories: 448, price: 119, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3416_McChicken.png" },
-        { name: "Філе-о-Фіш", calories: 379, price: 117, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3412_File-o-Fish_2025.png" },
-        { name: "Дабл Чізбургер", calories: 475, price: 121, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3411_DoubleCheeseburger.png" },
-        { name: "Чізбургер", calories: 298, price: 73, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3409_Cheeseburger.png" },
-        { name: "Гамбургер", calories: 249, price: 63, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3408_Hamburger.png" },
-        { name: "Чікен МакНагетс 6шт", calories: 265, price: 101, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_2130_Nuggets_6.png" },
-        { name: "Чікен МакНагетс 9шт", calories: 398, price: 145, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_2131_Nuggets_9.png" },
-        { name: "Чікен Джуніор", calories: 330, price: 73, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3426_CHICKEN_JUNIOR_BEST.png" },
-        { name: "Курячі стріпси 3шт", calories: 200, price: 97, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3500_3strips.png" }
+    // === ДАНІ: РОЗДІЛИ ТА СТРАВИ ===
+    // Для категорії "burgers" використано готовий масив із кодом бургерів. Інші розділи можна доповнити даними аналогічно.
+    const menuCategories = {
+      burgers: [
+        { name: "Біг Мак®", calories: 526, price: 141, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3413_BigMac.png", hasMenu: true },
+        { name: "Біг Тейсті Сингл", calories: 620, price: 192, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_3442_Sdwch_Big_Tasty_Single.jpg", hasMenu: true },
+        { name: "Тейсті Джуніор", calories: 400, price: 104, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_3441_Sdwch_Big_Tasty_Junior.jpg", hasMenu: true },
+        { name: "Дабл Біг Тейсті", calories: 880, price: 271, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_3443_Sdwch_Big_Tasty_Double.jpg", hasMenu: true },
+        { name: "Дабл Роял Чізбургер", calories: 760, price: 240, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3415_DoubleRoyalCheeseburger_2.png", hasMenu: true },
+        { name: "Роял Чізбургер", calories: 530, price: 161, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3414_RoyalCheeseburger_2.png", hasMenu: true },
+        { name: "МакЧікен", calories: 448, price: 119, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3416_McChicken.png", hasMenu: true },
+        { name: "Філе-о-Фіш", calories: 379, price: 117, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3412_File-o-Fish_2025.png", hasMenu: true },
+        { name: "Дабл Чізбургер", calories: 475, price: 121, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3411_DoubleCheeseburger.png", hasMenu: true },
+        { name: "Чізбургер", calories: 298, price: 73, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3409_Cheeseburger.png", hasMenu: true },
+        { name: "Гамбургер", calories: 249, price: 63, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3408_Hamburger.png", hasMenu: true },
+        { name: "Чікен МакНагетс 6шт", calories: 265, price: 101, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_2130_Nuggets_6.png", hasMenu: true },
+        { name: "Чікен МакНагетс 9шт", calories: 398, price: 145, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_2131_Nuggets_9.png", hasMenu: true },
+        { name: "Чікен Джуніор", calories: 330, price: 73, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3426_CHICKEN_JUNIOR_BEST.png", hasMenu: true },
+        { name: "Курячі стріпси 3шт", calories: 200, price: 97, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3500_3strips.png", hasMenu: true }
       ],
-      kfc: [
-        { name: "Zinger Burger", calories: 610, price: 6, img: "https://i.imgur.com/DrlUPPs.png" },
-        { name: "Twister", calories: 480, price: 5, img: "https://i.imgur.com/z04v2Y2.png" },
-        { name: "Fries Box", calories: 320, price: 3, img: "https://i.imgur.com/DN9jHZr.png" }
+      chicken: [
+        // Точно ті самі "Чікен МакНагетс", "Чікен Джуніор" та "Курячі стріпси" вже є в розділі burgers з hasMenu: true.
+        // Ви можете дублювати їх або вказати окремо:
+        { name: "Чікен МакНагетс 6шт", calories: 265, price: 101, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_2130_Nuggets_6.png", hasMenu: false },
+        { name: "Чікен МакНагетс 9шт", calories: 398, price: 145, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_2131_Nuggets_9.png", hasMenu: false },
+        { name: "Чікен Джуніор", calories: 330, price: 73, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3426_CHICKEN_JUNIOR_BEST.png", hasMenu: false },
+        { name: "Курячі стріпси 3шт", calories: 200, price: 97, img: "https://d3tqkqn8yl74v5.cloudfront.net/TPO-chf_ua_3500_3strips.png", hasMenu: false }
+      ],
+      fries: [
+        { name: "Картопля Фрі", calories: 312, price: 55, img: "https://via.placeholder.com/60", hasMenu: false },
+        { name: "Картопля по-селянськи", calories: 340, price: 65, img: "https://via.placeholder.com/60", hasMenu: false },
+        { name: "Салат Цезар", calories: 180, price: 75, img: "https://via.placeholder.com/60", hasMenu: false },
+        { name: "Каша", calories: 150, price: 45, img: "https://via.placeholder.com/60", hasMenu: false }
+      ],
+      drinks: [
+        { name: "Coca-Cola", calories: 140, price: 45, img: "https://i.imgur.com/UyjY9v2.png", hasMenu: false },
+        { name: "Fanta", calories: 160, price: 45, img: "https://i.imgur.com/PQXtJQx.png", hasMenu: false },
+        { name: "Sprite", calories: 150, price: 45, img: "https://i.imgur.com/JkKz0Wb.png", hasMenu: false },
+        { name: "Сік Апельсиновий", calories: 110, price: 50, img: "https://via.placeholder.com/60", hasMenu: false },
+        { name: "Вода", calories: 0, price: 30, img: "https://i.imgur.com/7sA5C2x.png", hasMenu: false }
+      ],
+      coffee: [
+        { name: "Еспресо", calories: 5, price: 40, img: "https://via.placeholder.com/60", hasMenu: false },
+        { name: "Американо", calories: 10, price: 45, img: "https://via.placeholder.com/60", hasMenu: false },
+        { name: "Капучино", calories: 120, price: 60, img: "https://via.placeholder.com/60", hasMenu: false },
+        { name: "Лате", calories: 150, price: 65, img: "https://via.placeholder.com/60", hasMenu: false },
+        { name: "Американо Фреш", calories: 15, price: 50, img: "https://via.placeholder.com/60", hasMenu: false }
+      ],
+      desserts: [
+        { name: "МакФлурі", calories: 230, price: 55, img: "https://via.placeholder.com/60", hasMenu: false },
+        { name: "МакПиріг® Полуниця", calories: 280, price: 50, img: "https://via.placeholder.com/60", hasMenu: false },
+        { name: "Морозиво Ванільне", calories: 200, price: 45, img: "https://via.placeholder.com/60", hasMenu: false },
+        { name: "Шоколадний Маффін", calories: 330, price: 65, img: "https://via.placeholder.com/60", hasMenu: false }
+      ],
+      happyMeal: [
+        { name: "Хеппі Міл з нагетсами", calories: 500, price: 160, img: "https://via.placeholder.com/60", hasMenu: false },
+        { name: "Хеппі Міл з бургером", calories: 550, price: 170, img: "https://via.placeholder.com/60", hasMenu: false }
+      ],
+      breakfast: [
+        { name: "МакМафін з яйцем та сиром", calories: 300, price: 75, img: "https://via.placeholder.com/60", hasMenu: false },
+        { name: "МакМафін з яйцем та беконом", calories: 350, price: 85, img: "https://via.placeholder.com/60", hasMenu: false },
+        { name: "МакМафін Фреш", calories: 320, price: 90, img: "https://via.placeholder.com/60", hasMenu: false },
+        { name: "Тост з сиром та беконом", calories: 360, price: 80, img: "https://via.placeholder.com/60", hasMenu: false },
+        { name: "Каша", calories: 150, price: 45, img: "https://via.placeholder.com/60", hasMenu: false }
       ]
     };
 
@@ -221,7 +275,7 @@
       { name: "Чилі соус" }
     ];
 
-    const drinks = [
+    const drinksForBuilder = [
       { name: "Coca-Cola", img: "https://i.imgur.com/UyjY9v2.png" },
       { name: "Fanta", img: "https://i.imgur.com/PQXtJQx.png" },
       { name: "Sprite", img: "https://i.imgur.com/JkKz0Wb.png" },
@@ -229,7 +283,7 @@
       { name: "Чай холодний", img: "https://i.imgur.com/VBoXu3q.png" }
     ];
 
-    // Три варіанти для першої вкладки
+    // Для меню-білдера (тільки «бургерів») ми беремо три варіанти:
     const firstChoices = [
       { name: "Картопля фрі", img: "https://i.imgur.com/3pZe5kq.png" },
       { name: "Діпи",       img: "https://i.imgur.com/Cl8vQTo.png" },
@@ -237,7 +291,7 @@
     ];
 
     // === СТАН ===
-    let selectedRestaurant = '';
+    let selectedCategory = '';
     let excludedDishes = new Set();
     let currentPickedDish = null;
 
@@ -249,37 +303,63 @@
     };
 
     // === ФУНКЦІЇ ===
-    function selectRestaurant(restaurant) {
-      selectedRestaurant = restaurant;
+
+    // Вибір розділу меню
+    function selectCategory(category) {
+      selectedCategory = category;
       document.getElementById("menuSection").style.display = "block";
       document.getElementById("menuBuilderSection").style.display = "none";
-      document.getElementById("restaurantName").textContent =
-        restaurant === "mcdonalds" ? "McDonald's" : "KFC";
+      document.getElementById("categoryName").textContent = getCategoryLabel(category);
+      excludedDishes.clear();
       renderMenu();
     }
 
+    function getCategoryLabel(cat) {
+      switch(cat) {
+        case 'burgers': return "Бургери та роли";
+        case 'chicken': return "Курка";
+        case 'fries': return "Картопля/Каша/Салати";
+        case 'drinks': return "Напої";
+        case 'coffee': return "Кава";
+        case 'desserts': return "Десерти";
+        case 'happyMeal': return "Хеппі Міл";
+        case 'breakfast': return "Сніданок";
+        default: return "";
+      }
+    }
+
+    // Відобразити список страв обраного розділу
     function renderMenu() {
       const container = document.getElementById("dishList");
       container.innerHTML = '';
-      menus[selectedRestaurant].forEach(dish => {
+      const list = menuCategories[selectedCategory] || [];
+      list.forEach(dish => {
+        const isExcluded = excludedDishes.has(dish.name);
         const div = document.createElement("div");
-        div.className = "item" + (excludedDishes.has(dish.name) ? " disabled" : "");
+        div.className = "item" + (isExcluded ? " disabled" : "");
+        const imgSrc = dish.img || "https://via.placeholder.com/60";
         div.innerHTML = `
           <div class="item-info">
-            <img src="${dish.img}" alt="${dish.name}">
+            <img src="${imgSrc}" alt="${dish.name}">
             <div class="item-details">
               <strong>${dish.name}</strong><br>
               ${dish.calories} ккал — ₴${dish.price.toFixed(2)}
             </div>
           </div>
-          <button class="btn-danger" onclick="toggleDish('${dish.name}')">
-            ${excludedDishes.has(dish.name) ? "Включити" : "Виключити"}
-          </button>
+          <div>
+            <button class="btn" onclick="pickThisDish('${dish.name}')" ${isExcluded ? 'disabled' : ''}>
+              Вибрати
+            </button>
+            <button class="btn-danger" onclick="toggleDish('${dish.name}')">
+              ${isExcluded ? "Включити" : "Виключити"}
+            </button>
+          </div>
         `;
         container.appendChild(div);
       });
     }
 
+    // Виключити/включити страву з рандома
     function toggleDish(name) {
       if (excludedDishes.has(name)) {
         excludedDishes.delete(name);
@@ -289,10 +369,20 @@
       renderMenu();
     }
 
+    // Вибрати конкретну страву через кнопку «Вибрати»
+    function pickThisDish(name) {
+      const list = menuCategories[selectedCategory] || [];
+      const dish = list.find(d => d.name === name);
+      if (!dish) return;
+      showDishModal(dish);
+    }
+
+    // Фільтрувати за калоріями та ціною і випадковим чином вибрати
     function filterAndPick() {
-      const maxCalories = parseInt(document.getElementById("calorieFilter").value) || 9999;
-      const maxPrice = parseFloat(document.getElementById("priceFilter").value) || 9999;
-      const filtered = menus[selectedRestaurant].filter(d =>
+      const maxCalories = parseInt(document.getElementById("calorieFilter").value) || Infinity;
+      const maxPrice = parseFloat(document.getElementById("priceFilter").value) || Infinity;
+      const list = menuCategories[selectedCategory] || [];
+      const filtered = list.filter(d =>
         d.calories <= maxCalories &&
         d.price <= maxPrice &&
         !excludedDishes.has(d.name)
@@ -302,20 +392,26 @@
         return;
       }
       const pick = filtered[Math.floor(Math.random() * filtered.length)];
-      if (selectedRestaurant === 'kfc') {
-        alert(`🎉 Твоя страва: ${pick.name}`);
-      } else {
-        showDishModal(pick);
-      }
+      showDishModal(pick);
     }
 
-    // --- МОДАЛЬНЕ ВІКНО ДЛЯ ВИБРАНОЇ СТРАВИ ---
+    // Показати модальне вікно з інформацією про страву
     function showDishModal(dish) {
       currentPickedDish = dish;
-      document.getElementById("modalDishImg").src = dish.img;
+      const imgSrc = dish.img || "https://via.placeholder.com/160";
+      document.getElementById("modalDishImg").src = imgSrc;
       document.getElementById("modalDishName").textContent = dish.name;
       document.getElementById("modalExcludeBtn").textContent =
         excludedDishes.has(dish.name) ? "Включити з рандома" : "Виключити з рандома";
+
+      // Якщо страва має власне меню (hasMenu === true), показати кнопку
+      const menuBtn = document.getElementById("modalMenuBtn");
+      if (dish.hasMenu) {
+        menuBtn.style.display = "inline-flex";
+      } else {
+        menuBtn.style.display = "none";
+      }
+
       document.getElementById("dishModalOverlay").style.display = "flex";
     }
 
@@ -345,24 +441,25 @@
       if (!currentPickedDish) return;
       const name = currentPickedDish.name;
       closeDishModal();
-      alert(`Ви обрали блюдо: ${name}`);
+      alert(`Ви обрали страву: ${name}`);
     }
 
+    // Якщо страва має меню (наприклад, бургери), відкриваємо білдер
     function chooseMenu() {
       if (!currentPickedDish) return;
       closeDishModal();
       openMenuBuilder(currentPickedDish);
     }
 
-    // --- ВІДКРИТИ БІЛДЕР МЕНЮ ---
+    // --- Білдер меню (тільки для «burgers») ---
     function openMenuBuilder(prefilledDish = null) {
-      selectedRestaurant = 'mcdonalds';
+      selectedCategory = 'burgers'; // переконаємось, що в білдері працюємо з бурґерами
       document.getElementById("menuSection").style.display = "none";
       document.getElementById("menuBuilderSection").style.display = "block";
-      // Очистити стан
+      // Очистити стан білдера
       builderSelection = { dish: null, sauce: null, drink: null, excludedBuilderDishes: new Set() };
 
-      // Скинути класи вкладок
+      // Налаштувати вкладки
       document.getElementById('dishesTab').classList.add('active');
       document.getElementById('saucesTab').classList.remove('active');
       document.getElementById('drinksTab').classList.remove('active');
@@ -381,18 +478,19 @@
       document.getElementById("finishMenuBtn").disabled = true;
     }
 
-    // --- ВКЛАДКА 1: ВИБІР ІЗ ТРЬОХ + РАНДОМ + ВИКЛЮЧЕННЯ ---
+    // --- Вкладка 1: вибір із трьох (або передзаповнене) + виключення + рандом ---
     function renderFirstChoices(prefilled = false) {
       const container = document.getElementById("firstChoices");
       container.innerHTML = '';
       if (prefilled && builderSelection.dish) {
-        // Показати лише попередньо обране блюдо
+        // Показати лише вже обрану страву
         const d = builderSelection.dish;
         const div = document.createElement("div");
         div.className = "item";
+        const imgSrc = d.img || "https://via.placeholder.com/60";
         div.innerHTML = `
           <div class="item-info">
-            <img src="${d.img}" alt="${d.name}">
+            <img src="${imgSrc}" alt="${d.name}">
             <div class="item-details">
               <strong>${d.name}</strong>
             </div>
@@ -431,6 +529,7 @@
 
     function selectBuilderDish(name) {
       if (builderSelection.excludedBuilderDishes.has(name)) return;
+      // У білдері «страви» ми допускаємо три варіанти (перші зі списку firstChoices)
       builderSelection.dish = firstChoices.find(c => c.name === name);
       renderFirstChoices();
       document.getElementById("toSaucesBtn").disabled = false;
@@ -468,7 +567,7 @@
       document.getElementById('drinksTab').classList.remove('active');
     }
 
-    // --- ВКЛАДКА 2: СОУСИ ---
+    // --- Вкладка 2: Соуси ---
     function renderSaucesList() {
       const container = document.getElementById("saucesList");
       container.innerHTML = '';
@@ -516,11 +615,11 @@
       document.getElementById('dishesTab').classList.remove('active');
     }
 
-    // --- ВКЛАДКА 3: НАПОЇ ---
+    // --- Вкладка 3: Напої ---
     function renderDrinksList() {
       const container = document.getElementById("drinksList");
       container.innerHTML = '';
-      drinks.forEach(d => {
+      drinksForBuilder.forEach(d => {
         const isSelected = builderSelection.drink && builderSelection.drink.name === d.name;
         const div = document.createElement("div");
         div.className = "item";
@@ -540,13 +639,13 @@
     }
 
     function selectBuilderDrink(name) {
-      builderSelection.drink = drinks.find(d => d.name === name);
+      builderSelection.drink = drinksForBuilder.find(d => d.name === name);
       renderDrinksList();
       document.getElementById("finishMenuBtn").disabled = false;
     }
 
     function randomizeBuilderDrink() {
-      const pick = drinks[Math.floor(Math.random() * drinks.length)];
+      const pick = drinksForBuilder[Math.floor(Math.random() * drinksForBuilder.length)];
       builderSelection.drink = pick;
       renderDrinksList();
       document.getElementById("finishMenuBtn").disabled = false;
@@ -568,10 +667,9 @@
       renderMenu();
     }
 
-    // Ініціалізувати першу вкладку із трьома варіантами
+    // Ініціалізуємо білдер, приховавши вкладки окрім першої
     function initFirstChoices() {
       renderFirstChoices(false);
-      // Забезпечити, що тільки перша вкладка активна
       document.getElementById('dishesTab').classList.add('active');
       document.getElementById('saucesTab').classList.remove('active');
       document.getElementById('drinksTab').classList.remove('active');
